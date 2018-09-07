@@ -31,6 +31,13 @@ class S3 implements StorageInterface, ServiceInterface
 {
 
     /**
+     * The root directory to store and retrieve files.
+     *
+     * @var string
+     */
+    private $root;
+
+    /**
      * League\Flysystem\Filesystem object through AWS S3 Client adapter
      *
      * @var League\Flysystem\Filesystem
@@ -48,12 +55,13 @@ class S3 implements StorageInterface, ServiceInterface
      * Constructor.
      * 
      * @param Kernel $kernel The Pho Kernel to access services
-     * @param string $options In Json format, as follows: {"client": {"credentials": {"key", "secret"}, "region", "version"}, "bucket"}
+     * @param string $options In Json format, as follows: {"client": {"credentials": {"key", "secret"}, "region", "version"}, "bucket", "root"}
      */
     public function __construct(Kernel $kernel, string $options)
     {
         $this->kernel = $kernel;
         $options = json_decode($options, true);
+        $this->root = isset($options["root"]) ? $options["root"] : "";
         $client = new S3Client($options["client"]);
         /*
         if (!file_exists($this->root)&&!mkdir($this->root)) {
@@ -73,7 +81,7 @@ class S3 implements StorageInterface, ServiceInterface
     */
     public function get(string $path): string
     {
-        return $this->path_normalize($path);
+        return $this->path_normalize($this->root."/".$path);
     }
     
     /**
@@ -110,7 +118,7 @@ class S3 implements StorageInterface, ServiceInterface
     {
         $contents = file_get_contents($this->get($path));
         $contents .= file_get_contents($file);
-        $this->put($this->get($path), $contents);
+        $this->put($path /* not $this->get($path) we don't want double ops */, $contents);
     }
     
     
