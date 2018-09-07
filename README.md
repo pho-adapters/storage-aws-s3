@@ -1,5 +1,5 @@
-# storage-filesystem
-Pho adapter for storage service, Filesystem.
+# storage-aws-s3
+Pho adapter for AWS S3.
 
 ## License
 MIT
